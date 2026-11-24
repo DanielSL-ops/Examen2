@@ -63,7 +63,14 @@ export async function api<T = unknown>(ruta: string, opciones: OpcionesApi = {})
 
     if (response.status === 204) return null as T;
 
-    const cuerpo = await response.json();
+    let cuerpo;
+    try {
+      cuerpo = await response.json();
+    } catch (error) {
+      // Un error HTTP puede llegar sin JSON; conserve su estado y el manejo de 401.
+      if (response.ok) throw error;
+      cuerpo = null;
+    }
     if (!response.ok) {
       if (response.status === 401 && ruta !== '/login') {
         await olvidarSesion();

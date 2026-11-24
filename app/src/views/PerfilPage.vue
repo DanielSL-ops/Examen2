@@ -19,6 +19,22 @@
             Plataforma (Capacitor.getPlatform()), Modelo, Sistema (operatingSystem + osVersion)
             y Conexión (ion-badge con `tipo` o "sin conexión" según `conectado`).
         -->
+        <ion-list-header>Dispositivo</ion-list-header>
+        <ion-item>
+          <ion-label>Plataforma: {{ plataforma }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Modelo: {{ dispositivo?.model ?? '—' }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Sistema: {{ dispositivo ? `${dispositivo.operatingSystem} ${dispositivo.osVersion}` : '—' }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Conexión</ion-label>
+          <ion-badge slot="end" :color="conectado ? 'success' : 'warning'">
+            {{ conectado ? tipo : 'sin conexión' }}
+          </ion-badge>
+        </ion-item>
       </ion-list>
 
       <div class="ion-padding">
@@ -32,7 +48,7 @@
 import { ref } from 'vue';
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonListHeader, IonItem, IonIcon,
-  IonLabel, IonNote, IonBadge, IonButton, onIonViewWillEnter, useIonRouter,
+  IonLabel, IonBadge, IonButton, onIonViewWillEnter, useIonRouter,
 } from '@ionic/vue';
 import { personCircleOutline } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
@@ -45,9 +61,12 @@ const { conectado, tipo } = useConexion();
 const ionRouter = useIonRouter();
 
 // TODO [M7] Obtenga la plataforma y la información del dispositivo (Device.getInfo()) al entrar a la página.
-const plataforma = Capacitor.getPlatform();
+const plataforma = ref('');
 const dispositivo = ref<DeviceInfo | null>(null);
-void [plataforma, dispositivo, Device, onIonViewWillEnter, conectado, tipo, IonNote, IonBadge];
+onIonViewWillEnter(async () => {
+  plataforma.value = Capacitor.getPlatform();
+  dispositivo.value = await Device.getInfo();
+});
 
 async function salir() {
   await cerrarSesion();
